@@ -17,6 +17,9 @@ https://qiita.com/shionit/items/fb4a1a30538f8d335b35
 ・登録したユーザー情報が保存されていることを以下コマンドで確認する
 　git config --list
 
+◾️リモートで削除済み、ローカルにまだ残っているブランチを一括で削除するコマンド
+git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d
+
 ◾️GitHubからクローンする
 　※GitHubにクローンするリポジトリが存在することを前提とする
 　・git clone リポジトリURL
