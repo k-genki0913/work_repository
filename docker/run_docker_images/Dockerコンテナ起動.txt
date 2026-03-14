@@ -1,0 +1,120 @@
+◾️Dockerコンテナを起動するために必要なもの
+・Docker環境（docker環境構築.txtを参照）
+・Docker Image（本ファイルで説明する内容）
+
+◾️Docker Imageの準備方法
+方法1.Docker Hubに公開されているDocker Imageを利用するために、Dockerホストへイメージを保存する（カスタマイズしない）
+方法2.Docker Imageに対して追加設定を行った新しいDocker Imageを自分で作成し、Dockerホストへ保存する（カスタマイズする）
+→Dockerホストへ利用するDocker Imageを保存する必要がある
+
+◾️Docker Imageの取得ルート
+1. 取得対象のDocker ImageがDockerホストのイメージ一覧に存在する
+　→ Dockerホストのイメージを利用する
+2. 取得対象のDocker ImageがDockerホストのイメージ一覧に存在しない
+　→ 指定されたDockerレジストリに保存されているイメージを利用する
+　※Dockerレジストリを明示的に指定しない場合、Docker Hubレジストリが設定される
+
+※Docker Imageの取得方法
+https://docs.docker.jp/engine/userguide/containers/dockerimages.html
+
+◾️Docker Imageの準備方法 方法1 自分でカスタマイズしないDocker Imageを利用してDockerコンテナを起動する
+・Dockerホストのイメージ一覧にDocker imageを取り込む方法は2つある
+方法1：Docker Hubなど外部レジストリからイメージを取得する（pull）
+方法2：tarファイルに保存されているイメージを読み込む（load）
+
+▼方法1 外部レジストリからイメージを取得する
+①以下コマンドを実行し、Dockerホストに使用したいDocker Imageが存在しないことを確認する
+　docker images
+　※存在する場合⑤のdocker runコマンドへ移動する
+
+②Docker Hubで利用したいDocker Imageを検索する
+　Docker Hub URL：https://hub.docker.com/
+　※今回はnginx tag：1.29.6を用いる
+
+③以下コマンドを実行する
+　docker pull nginx:1.29.6
+
+　※docker pullコマンドの参考資料
+　https://docs.docker.jp/engine/reference/commandline/pull.html
+
+④以下コマンドを実行し、Dockerホストのイメージ一覧に取得（pull）したイメージが存在することを確認する
+　docker images
+
+　コマンド結果のIMAGEカラムにnginx:1.29.6が表示されること
+　※Image名：tag
+
+-- 以下はnginxを用いた場合を用いて記載しているが、利用するコマンドは同じであることが多く、オプションが違う場合がある
+
+⑤以下コマンドを用いてDockerホストに保存されているイメージからコンテナを起動する
+　docker run -d -p 80:80 nginx:1.29.6
+
+　※docker runコマンドの参考資料（docker runコマンドは起動するimageなどにオプションが変わるため確認が必要）
+　https://docs.docker.jp/engine/reference/commandline/run.html
+
+⑥以下コマンドを用いてDockerコンテナが起動していることを確認する
+　docker container ls
+
+　※docker container lsコマンドの参考資料（docker psでも確認できるが推奨コマンドを記載）
+　https://docs.docker.jp/engine/reference/commandline/container_ls.html
+
+⑦コンテナ内でnginxが起動していることを確認する
+　curl localhost:80
+
+　出力結果がnginxで起動ページであること
+
+▼方法2：tarファイルに保存されているイメージを読み込む（load）
+※事前にtarファイルを取得していること
+①以下コマンドを実行し、tarファイルからDocker ImageをDockerホストへ保存する
+　docker load < tarファイルパス
+
+　※docker loadコマンドの参考資料
+　https://docs.docker.jp/engine/reference/commandline/load.html
+
+②以下コマンドを実行し、Dockerホストのイメージ一覧に取得（pull）したイメージが存在することを確認する
+　docker images
+
+　コマンド結果のIMAGEカラムに読み込んだ（load）イメージが表示されること
+
+-- これ以降は読み込んだDocker Imageによって実施方法が変わるため記載しない
+　　ただ、docker runコマンドを実行し、docker container lsで起動できていることを確認するのが通常である
+
+◾️Docker Imageの準備方法 方法2 自分でカスタマイズしたDocker Imageを利用してDockerコンテナを起動する（Dockerfile利用方法）
+事前準備：自分でカスタマイズしたDocker Imageを利用する場合、事前にカスタマイズ元のDocker ImageをDockerホストのイメージ一覧へ保存する必要がある
+※カスタマイズ元のDocker ImageをDockerホストのイメージ一覧へ保存する方法はDocker Imageの準備方法 方法1を参照
+※実際はDocker Hubからイメージを取得する場合は事前準備しなくて良い
+
+参考ページ
+https://docs.docker.jp/engine/userguide/containers/dockerimages.html#dockerfile
+
+カスタマイズ方法
+①Dockerfileを作成する
+　Python_Dockerfileディレクトリ内のDockerfileを参照
+　※参考ページ
+　https://zenn.dev/joho0724/articles/sankaku0724-newcreate31#dockerfile%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%BF%E3%82%8B
+
+　※Dockerfileで記載するコマンドは以下ページの内容がわかりやすい
+　https://qiita.com/nimo1/items/5114bcfa0f780d0205e3#3-dockerfile%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9%E3%82%B3%E3%83%9E%E3%83%B3%E3%83%89%E4%B8%80%E8%A6%A7
+　※公式ドキュメントは以下になる
+　https://docs.docker.jp/engine/reference/builder.html
+
+②Dockerfileが存在するディレクトリで以下コマンドを実行してDockerfileからDocker Imageを作成（ビルド）する
+　docker build -t my-python-app .
+　※参考ページ（①の参考ページと同じページ）
+　https://zenn.dev/joho0724/articles/sankaku0724-newcreate31#dockerfile%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%BF%E3%82%8B
+
+　※docker buildコマンドの参考資料
+　https://docs.docker.jp/engine/reference/commandline/build.html
+
+③以下コマンドを実行し作成したDocker Imageが存在することを確認する
+　docker images
+
+　出力結果にmy-python-app:latestと表示されていることを確認する
+
+④以下コマンドを実行してDockerイメージ一覧からコンテナを起動する
+　docker run my-python-app
+
+　コマンド実行後に「Hello, World!」が表示されること
+　※Hello, World!はapp.pyに記載したprint("Hello, World")が実行された結果である
+　 カスタマイズ元のイメージ（python:3.9-slim）はコンテナ起動時にHello, World!を出力しないため
+　 今回行ったカスタマイズが正常に実行されていることが確認できる
+　 カスタマイズ方法はDockerfileの作成方法によるため別ファイルで説明することとする
