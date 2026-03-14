@@ -1,0 +1,25 @@
+◾️VScode デザイン
+・na2co3 Light Theme
+・vscode-icons
+
+◾️VSCode 言語
+・Japanese Language Pack for Visual Studio Code
+
+◾️VSCode ツール
+・Path Intellisense（ファイル上にパンクズリスト）
+
+◾️Git関係
+・Git Graph
+
+-----------------------------------------------
+
+◾️コード全般
+・indent-rainbow（インデントの色を変更）
+・TODO Hightlight（TODO:、FIXME:の色を変更）
+・Trailing Spaces（行の最後に存在するスペースの表示、削除）
+・zenkaku（全角スペースの表示）
+
+◾️HTML・CSS
+・Auto Rename Tag（タグ編集時に閉じタグも自動で変更）
+・HTML End Tag Labels（閉じタグにID・classを表示）
+・Prettier（フォーマッター）
