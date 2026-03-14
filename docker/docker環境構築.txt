@@ -1,0 +1,48 @@
+◾️macでdocker環境を構築する
+※Docker for Desktopは利用しない
+
+参考ページ：
+macOS上のコンテナ実行環境をRancher DesktopからColimaに変えてみた
+https://dev.classmethod.jp/articles/migrating-from-rancher-desktop-to-colima-docker-environment/
+
+Colima Github
+https://github.com/abiosoft/colima?tab=readme-ov-file#docker
+
+◾️環境構築手順
+・Dockerのインストール
+※Colimaの自動起動を有効にするためにDocker CLIが必要なため事前にインストールする
+
+　・実行コマンド
+　　brew install docker
+
+　・インストール確認
+　　docker --version
+
+・Colimaのインストール
+※Colimaをインストールする理由は参考ページを参照
+　・実行コマンド
+　　brew install colima
+
+　・Macログイン時にColimaを自動起動させたいため以下コマンドを実行する
+　　brew services start colima
+
+◾️動作確認
+・Colimaが起動していることを確認する
+　以下コマンドを実行し、「colima is runnning using macOS Virtualization.Framework」と出力されること
+　colima status
+
+・docker imageを取得する
+　docker pull nginx:latest
+
+・コンテナイメージを起動する
+　docker run -d -p 80:80 nginx:latest
+
+・nginxコンテナが起動していることを確認する
+　curl localhost:80
+
+　<!DOCTYPE html>
+　<html>
+　<head>
+　<title>Welcome to nginx!</title>
+　<style>
+　＜以下略＞
