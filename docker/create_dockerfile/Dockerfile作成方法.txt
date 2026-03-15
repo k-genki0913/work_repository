@@ -1,0 +1,208 @@
+※Dockerfile参考ページ
+https://docs.docker.jp/engine/reference/builder.html
+
+◾️Dockerfileとは
+・Dockerfileに記載された内容で独自のDocker Imageを作成することができる
+
+◾️DockerfileでDocker Imageを作成する前に必要な知識
+・docker buildコマンド
+　DockerfileからDocker Imageを作成する際にdocker buildコマンドを利用する
+
+　※docker buildコマンドの参考資料
+　https://docs.docker.jp/engine/reference/commandline/build.html
+
+　docker buildコマンドを実施する際、buildコンテキストを指定する
+　buildコンテキストには、ローカルPCのPATHやURL(Gitリポジトリなど)を指定する
+
+　Dockerfileで定義する内容にローカルPCの特定のファイルをコピーする定義もあるが、
+　その特定のファイルを検索する開始点になるのがbuildコンテキストである。
+
+　そのため、　Dockerfile内で利用するファイルが、buildコンテキストに存在しない場合、
+　docker buildコマンドでエラーとなる
+　また、buildコンテキストのルートディレクトリにDockerfileを配置する必要があるため、
+　ディレクトリ構成は考慮が必要
+
+　また、Dockerfile内で利用する値をdocker buildコマンド実行時に指定するためのオプション（--build-arg）も存在する
+　例）Dockerfile内でHTTP_PROXY設定を定義したいが、HTTP_PROXYに利用する値はイメージをビルドする端末ごとで変更する必要があるため、
+　　Docckerfile内にハードコーディングできない。
+　　そのため、値はdocker buildコマンドの--build-argオプションから受け取るようにDockerfileは定義し、
+　　docker buildコマンド実行時に--build-argオプションで値を指定するようにする
+
+　※docker buildは、buildコンテキストとDockerfileを別で管理できるように
+　　buildで利用するDockerfileのPATHを指定するオプション（-f）や、
+　　build成功時のイメージの保存名（リポジトリとタグ）を指定するオプション（-t）も存在する
+
+◾️Dockerfile 書式・命令
+▼書式
+・Dockerfileは必ずFROM命令から始める必要がある
+　※コメント、全体に適用されるARG、パーサ・ディレクティブがFROM命令の前に来ることもある
+　※パーサ・ディレクティブの意味を本ファイル記載時は理解できていない
+
+・基本的には以下の書式で記載する
+　コマンド 引数
+
+・#で始まる行をコメントとみなす
+
+・エスケープするためのデフォルトエスケープ文字は「\」
+　ただ、escape命令でエスケープ文字を指定することも可能
+　# escape =`
+
+・ENV命令で定義された環境変数を利用する場合、$変数名、または${変数名}と記載する
+例）
+ENV FOO=/bar
+WORKDIR ${FOO}
+→作業ディレクトリが/barになる
+
+▼命令
+・FROM：Dockerイメージ構築時の元になるDockerイメージを指定する
+例）
+FROM nginx:1.29.6
+→Dockerホストのイメージ一覧に存在する場合、Dockerホストのイメージ一覧からイメージを取得する
+ Dockerホストのイメージ一覧にない場合、リポジトリの指定がない場合はDocker Hubから取得する
+ ※Dockerイメージを取得するリポジトリを明記することで特定のリポジトリからDockerイメージを取得できる
+
+!!全体的に言えることだが、dockerイメージを取得する際、tag情報は明記する
+　tag情報を明記しない場合、latestタグに指定されているイメージが取得されるが、latestタグが紐づくDockerイメージは日々更新されるため
+　いつDockerイメージを取得したかによって、Dockerイメージの中身が変わる（コンテナ全体の動作が変わる）ことがあるため
+
+・RUN：Dockerイメージを作成するときに実行されるコマンド（コンテナ起動時には実行されない）
+　　　 RUN命令前のイメージよりも上の新しいレイヤでコマンドを実行し、その結果を確定させる。
+
+RUN命令を実行する方法は2つある
+　・シェル形式：RUN <コマンド>
+　・実行形式：RUN ["実行ファイル", "パラメータ1", "パラメータ2"]
+
+・CMD：Dockerコンテナ起動時に実行されるコマンド（Dockerイメージを作成するときには実行されない）
+　　　→コンテナ起動時のデフォルト（初期設定）を指定するために定義する
+!!CMD命令はDockerfile内で1度しか利用できない。
+　複数のCMD命令が存在する場合は、最後のCMD命令が実行される
+
+CMD命令を実行する方法は3つある
+　・exec形式：CMD ["実行ファイル", "パラメータ1", "パラメータ2"]
+　・ENTRYPOINT形式：CMD ["パラメータ1", "パラメータ2"]
+　・シェル形式：CMD コマンド パラメータ1 パラメータ2
+
+・EXPOSE：コンテナ実行時に、どのポートをコンテナが受け付けているかをDockerへ通知することができる。
+　　　　　ただ、EXPOSE命令だけでは実際にポートは公開されない。
+　　　　　どのポートを公開する想定でイメージが作成されたかをコンテナ実行者へ連携するある種のドキュメントになる。
+　　　　　実際にコンテナ実行時にポートを公開するにはdocker runコマンドの-pオプションを使ってマッピングする
+
+・ENV：Dockerイメージ内の環境変数を定義する
+　　　　ENV命令で定義された環境変数はDockerイメージを作成するときだけでなく、作成したDockerイメージを用いて起動したコンテナ内にも継承される。
+　　　　そのため、Dockerイメージを作成するときだけ環境変数として利用したい場合はARG命令を、
+　　　　Dockerイメージの作成だけでなくDockerコンテナにも継承したい場合はENV命令を利用する
+例）
+ENV MY_NAME="Test"
+ENV MY_DOG="Nyanco"
+
+・ADD：ビルドコンテキスト、または指定したURLの特定のディレクトリ、ファイルを、Dockerイメージの指定したファイルパスへ追加（コピー）する
+　　　　追加元がディレクトリの場合、指定したディレクトリをコピーするのではなく、指定したディレクトリの中身をコピーする
+　　　　ビルドコンテキスト内のディレクトリ、ファイルをコピーするCOPY命令も存在する
+　　　　ADD命令の方が利用できる機能が多いが潜在的なリスクもあるため、基本的にはCOPY命令を利用し、COPY命令で実現できない場合、ADD命令の利用を選択する
+　　　　※参考資料 ADD命令とCOPY命令の違いを理解する　
+　　　　https://www.docker.com/ja-jp/blog/docker-best-practices-understanding-the-differences-between-add-and-copy-instructions-in-dockerfiles/
+
+ADD命令を実行する方法は2つある
+　・ADD [--chown=ユーザー:グループ] 追加元(from) 追加先(to)
+　・ADD [--chown=ユーザー:グループ] ["追加元"(from), "追加先"(to)]　※パスに空白が存在する場合、この形式でしか正しく動作しない
+　※--chownはオプション
+
+　追加元は複数指定することが可能であり、ワイルドカードなども指定可能
+　追加先は絶対パスかWORKDIR（作業ディレクトリ）からの相対パスを指定する
+　追加先が存在しない場合はコピー先のディレクトリをDockerが自動作成した後にコピーが実行される
+　追加先が「/」で終わっている場合は、追加先をディレクトリと判断しディレクトリ内に追加する
+　追加先が「/」で終わっていない場合は、追加先をファイルと判断しコピー元の内容が追加先のファイルへ書き込まれる
+　※絶対パスを指定する場合は 「/」から始める
+　　　例）ADD test.txt /app
+　　　　→ビルドコンテキストのtest.txtをDockerイメージの/appディレクトリへコピーする
+
+　 WORKDIRからの相対パスを指定する場合は「/」を記載せずディレクトリ名から記載する
+　　　例）作業ディレクトリが/testの場合
+　　　　  ADD test.txt add_directory/
+　　　　→ビルドコンテキストのtest.txtをDockerイメージの/test/add_directory/へコピーする
+
+・COPY：ビルドコンテキストの特定のディレクトリ、ファイルをDockerイメージの指定したファイルパスへコピーする
+　　　　 コピー元がディレクトリの場合、指定したディレクトリをコピーするのではなく、指定したディレクトリの中身をコピーする
+
+COPY命令を実行する方法は2つある
+　・COPY [--chown=ユーザー:グループ] コピー元(from) 追加先(to)
+　・COPY [--chown=ユーザー:グループ] ["コピー元"(from), "コピー先"(to)]
+　※--chownはオプション
+
+　コピー元は複数指定することが可能であり、ワイルドカードなども指定可能
+　コピー先は絶対パスかWORKDIR（作業ディレクトリ）からの相対パスを指定する
+　コピー先が存在しない場合はコピー先のディレクトリをDockerが自動作成した後にコピーが実行される
+　コピー先が「/」で終わっている場合は、コピー先をディレクトリと判断しディレクトリ内にコピーする
+　コピー先が「/」で終わっていない場合は、コピー先をファイルと判断しコピー元の内容がコピー先のファイルへ書き込まれる
+　※ADD命令とほぼ同じ使い方になる（コピー元に外部URLを指定できない）
+　 そのため、COPY命令の例はADD命令の例のADDをCOPYに変えるだけのため割愛する
+
+・ENTRYPOINT：※詳細が難しく、利用頻度が少ないため割愛
+　　　　　　　　 ただ、基本的にCMDと同じでコンテナ起動時にコマンドを実行することができる
+　　　　　　　　 ENTRYPOINTとCMDを両方定義している場合、ENTRYPOINT定義したコマンドの引数としてCMDの記載内容が連携される
+　　　　　　　　 ENTRYPOINTの方が優先されるイメージ
+　　　　　　　　 そのため、確実に実行されるコマンドはENTRYPOINTへ、ENTRYPOINTへ渡す引数としてCMDを利用する??
+　　　　　　　　 ENTRYPOINTとCMDの追加分けは以下ページを確認
+　　　　　　　　 https://docs.docker.jp/engine/reference/builder.html#cmd-entrypoint
+
+・VOLUME：Dockerイメージ内の指定したディレクトリをDocker Volumeにする（Docker Volumeよりバインドマウントを利用することが多い気がする）
+　　　　　※Docker Volumeとは、Dockerコンテナ内で保存されるデータを永続化するために利用する機能
+　　　　　 Docker Volumeを利用しない場合、Dockerコンテナ起動後に追加したファイルは、コンテナを削除・起動（再構築）すると消滅する
+　　　　　 理由は、Dockerコンテナ内で保存されているファイルのため、Dockerコンテナが削除されるとファイルも削除される
+　　　　　 ただ、DBに保存したデータなど特定のデータはコンテナを削除しても保持し続けたい
+　　　　　 その際に、永続化したいデータが保存されるディレクトリをDocker Volumeとしてコンテナ外（Dockerホスト）で保存することによって
+　　　　　 コンテナが削除されてもデータがDockerホストに残り続ける（永続化される）状態にすることができる。
+　　　　　※Docker Volumeとバインドマウントは別物である
+　　　　　 Docker VolumeはDockerが管理するディレクトリ内にデータを保存しており、データの保存名や方法はDockerが管理する
+　　　　　　→データの永続化は可能。Dockerホストの指定したディレクトリとバインド（紐付ける）ことはできない
+　　　　　 バインドマウントはユーザーが指定したDockerホストのディレクトリとDockerイメージ内のディレクトリを紐づけることができる
+　　　　　　→データの永続化は可能。永続化したいデータをDockerホストの指定したディレクトリへ出力することが可能（出力だけでなく、ファイルを受け渡すことも可能）
+　　　　　 VOLUME命令ではバインドマウントを指定することはできない。docker runコマンドの-vオプションを利用すること
+
+例）
+VOLUME /var/log
+→Docker Image（Dockerコンテナ??）の/var/logをDocker Volumeとしてコンテナ外のディレクトリへ保存する
+※MacOs + colima上でDockerを起動している場合、colimaの/var/lib/docker/volumesディレクトリ内にデータは保存されている
+ 
+・WORKDIR：Dockerfile内でRUN、CMD、ENTRYPOINT、COPY、ADD命令の処理を実行する際の作業ディレクトリ（カレントディレクトリ）を指定する
+　　　　　　WORKDIRで指定したディレクトリが存在していない場合は自動で作成される
+　　　　　　WORKDIRは相対パス、絶対パス、どちらも指定可能
+
+例）
+WORKDIR /a
+WORKDIR b
+WORKDIR c
+RUN pwd
+→/a/b/c
+
+ENV命令で指定した環境変数を利用することも可能
+例）
+ENV DIRPATH=/path
+WORKDIR $DIRPATH/test
+RUN pwd
+→ /path/test
+
+・ARG：buildコマンドでユーザーが指定できる変数を定義する
+
+例）
+Dockerfile内の記載
+
+ARG user
+ARG email
+
+docker buildコマンドの呼び出し方
+docker build --build-arg user=test_user email=test@example.com
+※docker buildコマンドの--build-argオプションで指定した変数の数がDockerfileのARGで定義された変数の数と同一ではない場合、
+ docker buildコマンドは警告ログを出力する
+
+
+ARG命令はデフォルト値を指定することが可能
+docker buildコマンドで指定されなかった変数はデフォルト値が利用される
+例）
+ARG user=default_test_user
+ARG email=default_test@example
+
+
+ARG命令で定義した変数の範囲は、ARG命令が定義された後の行〜構築ステージが終わるまでである
+
+
