@@ -205,4 +205,42 @@ ARG email=default_test@example
 
 ARG命令で定義した変数の範囲は、ARG命令が定義された後の行〜構築ステージが終わるまでである
 
+・ONBUILD：※利用頻度が少ないため、必要な際に内容を確認する。マルチステージビルドの考え方がベースにある??
+　　　　　　　ドキュメントを現時点で読んだ感じでは、汎用的にイメージを作成するときに利用するイメージ
+　　　　　　　https://docs.docker.jp/engine/reference/builder.html#onbuild
 
+・STOPSIGNAL：※利用頻度が少ないため、必要な際に内容を確認する
+　　　　　　　　https://docs.docker.jp/engine/reference/builder.html#stopsignal
+
+・HEALTHCHECK：コンテナが動作し続けているかを確認する（正しく動かすためには案外使えるかも!）
+
+ヘルスチェックを行うCMD命令を指定する
+CMD命令に指定するコマンドは終了ステータスが存在するものとする（0:成功、1：障害など　※コマンドによる）
+それに対して、ヘルスチェックとして、どの間隔でチェックするか、チェックするためのタイムアウトの時間、リトライ回数などを指定する
+また、コンテナ起動から初回コマンドまで時間がかかる処理の場合は開始する秒数を何秒にするか指定する
+
+ヘルスチェックを用いるシーンの想定
+ヘルスチェックを設定したDockerイメージから起動したDockerコンテナと接続するコンテナを制御可能
+例）
+Aコンテナは起動してからコンテナ内のシステムが立ち上がるまで10秒かかる
+Aコンテナに接続するBコンテナはAコンテナ内のシステムが正常起動する前に接続してエラーとなる
+→Aコンテナにシステムが立ち上がったことを確認するヘルスチェックを設定
+ BコンテナにAコンテナのヘルスチェックの結果がHealthyになってから接続するように設定
+→BコンテナはAコンテナ内のシステムが立ち上がってから接続するためエラーが発生しなくなった
+
+※参考ページ
+https://creative-studio.jp/%E3%80%90docker%E3%80%91docker%E3%81%AE%E3%83%98%E3%83%AB%E3%82%B9%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%81%A8%E3%81%AF%EF%BC%9F/
+
+・SHELL：シェル形式で使われるデフォルトのコマンドを上書きする
+
+RUN、CMD、ENTRYPOINTで指定したコマンドをどのシェルで実行するかを指定できる。
+例）
+# 「powershell -command Write-Host hello」として実行
+SHELL ["powershell", "-command"]
+RUN Write-Host hello
+
+# 「cmd /S /C echo hello」として実行
+SHELL ["cmd", "/S", "/C"]
+RUN echo hello
+
+Linux上ではbashだけでなく、zsh、csh、tchshなどのシェルに切り替えることができる
