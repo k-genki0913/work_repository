@@ -1,0 +1,193 @@
+◾️buildコマンド（DockerfileからDockerイメージを作成する）
+コンテキスト内のルートディレクトリにDockerfileが存在する場合
+・docker build -t イメージ名:tag名 コンテキスト
+
+コンテキスト内のルートディレクトリにDockerfileが存在しない or ファイル名がDockerfileではない場合
+・docker build -t イメージ名：tag名 -f Dockerfileパス コンテキスト
+
+構築時に変数を指定する場合
+・docker build -t イメージ名:tag名 --build-arg 変数名=値 コンテキスト
+
+◾️runコマンド（DockerイメージからDockerコンテナを起動する）
+デタッチドモード（バックグラウンド）で起動する場合
+・-dをつける
+
+フォアグランドモードで起動する場合
+・-dをつけない
+
+コンテナ名をつけて起動する場合（Dockerネットワーク内でコンテナ名を指定して接続することが可能）
+・--name
+
+コンテナをネットワークに接続する場合
+・--net=値
+　・値
+　　・<ネットワーク名>|<ネットワークID>：docker network createコマンドでユーザーが作成したネットワークを使用
+　　・bridge：デフォルトのDockerブリッジ上で、コンテナに対する新しいネットワークスタックを作成
+　　　　　　　 Dockerのデフォルトネットワーク機能。ネットワーク名はdocker0となっている
+　　・none：コンテナにネットワーク機能をつけない = コンテナから外部経路に対してアクセスできない（ホストとも接続できない）
+　　・container:<名前|id>；他のコンテナ用ネットワーク・スタックを再利用
+　　・host：Dockerホスト側のネットワークスタックを使用
+　　
+コンテナ終了時に、コンテナをクリーンアップし、コンテナ内で保存されたファイルを削除する場合
+※匿名ボリュームも削除される
+※--rmオプションを指定せずに起動したコンテナを終了した場合、ファイルなどは残る
+・--rm
+
+コンテナ内のポートまたはポート範囲を出力する
+・--expose=[]
+
+コンテナのポートまたはポート範囲をホスト側に公開する
+・-p=ホストポート:Dockerコンテナポート
+
+ボリュームをマウントする場合
+・-volume=Dockerコンテナ内のディレクトリ（絶対パス）
+
+名前付きボリュームをマウントする場合
+・-volume=ボリューム名:コンテナ内のディレクトリ（絶対パス）
+
+DockerホストのディレクトリとDockerコンテナのディレクトリをバインドマウントする場合
+・-volume=Dockerホスト内のディレクトリ（絶対パス）:コンテナ内のディレクトリ（絶対パス）
+
+作業用ディレクトリを指定する場合（DockerfileのWORKDIRを上書き）
+・-w=コンテナ内のディレクトリ
+
+◾️cpコマンド（コンテナとDockerホスト間でファイルやフォルダをコピーする）
+コンテナからDockerホストへコピーする場合
+・docker cp コンテナ名:コピー元ファイル・フォルダの絶対パス Dockerホストのコピー先パス（相対パス or 絶対パス）
+
+Dockerホストからコンテナへコピーする場合
+・docker cp Dockerホストのコピー元パス（相対パス or 絶対パス） コンテナ名:コピー先フォルダの絶対パス 
+
+◾️createコマンド（Dockerコンテナを作成する　※起動はしない）
+コンテナを作成する場合
+・docker create Dockerイメージ
+※-vオプション（ボリュームオプション）も指定可能
+
+◾️diffコマンド（コンテナ作成後、コンテナのファイルシステム上で変更したファイルやディレクトリの一覧を表示する
+・docker diff コンテナ名
+※diffコマンドを使用できるのは、docker run時に--nameオプションを使用してコンテナ名を指定したコンテナのみ
+
+◾️execコマンド（実行中のコンテナ内でコマンドを実行する）
+実行中のコンテナ上で双方向のbashシェルを実行する
+・docker exec -it コンテナ名 コマンド（/bin/bashなど）
+
+◾️historyコマンド（Dockerイメージの履歴（どのように構築されたか）を表知る）
+・docker history Dockerイメージ
+
+◾️imageコマンド（Dockerイメージを管理する）
+▼image pruneコマンド（使用していないイメージを削除する）
+未使用のイメージを全て削除する
+・docker image prune -a
+
+▼image rmコマンド（特定のイメージを削除する）
+・docker image rm イメージ名
+
+◾️imagesコマンド（Dockerイメージの一覧を表示する）
+・docker images
+
+◾️inspectコマンド（Dockerコンテナの詳細情報を表示する）
+・docker inspect コンテナ名
+
+◾️killコマンド（実行中のコンテナを強制停止する）
+・docker kill コンテナ名
+
+◾️loadコマンド（tarファイルからDockerイメージを取り込む）
+・docker load -i ファイルパス
+
+◾️logsコマンド（コンテナのログを取得する）
+・docker logs コンテナ名
+※このコマンドが使えるのは、コンテナがロギング・ドライバを使って起動している場合のみ
+
+◾️networkコマンド（Dockerネットワークを管理する）
+　network内にサブネットをさkすえいs
+▼network createコマンド（ネットワークを作成する）
+・docker network create ネットワーク名
+
+▼network connect（コンテナをネットワークに接続する）
+・docker network connect ネットワーク名 コンテナ名
+
+▼network disconnect（ネットワークからコンテナを切断する）
+docker network disconnect ネットワーク名 コンテナ名
+
+▼network inspect（ネットワークの詳細情報を表示する（
+・docker network inspect ネットワーク名
+
+▼network ls（ネットワークの一覧を表示する）
+・docker network ls
+
+▼network prune（使用していないネットワークを全て削除する）
+・docker network prune
+
+▼network rm（ネットワークを削除する）
+・docker rm ネットワーク名
+
+◾️pauseコマンド（コンテナ内部で実行しているプロセスを全て一時停止する
+・docker pause コンテナ名
+
+◾️portコマンド（ポート割り当ての一覧、または特定のコンテナに対する割り当てを表示する）
+一覧を表示する場合
+・docker port
+
+特定のコンテナの割り当てを表示する場合
+・docker port コンテナ名
+
+◾️psコマンド（コンテナを一覧表示する）
+実行中のコンテナ一覧を表示する
+・docker ps
+
+全て（停止中も含め）のコンテナ一覧を表示する
+・docker ps -a
+
+◾️pullコマンド（レジストリからイメージやリポジトリを取得する）
+・docker pull イメージ名:タグ名
+※企業内でプロキシサーバーを設定している場合、docker pull前にプロキシの設定を行う
+　設定方法は環境変数：HTTP_PROXY、HTTPS_PROXY、NO_PROXYを設定する
+
+◾️pushコマンド（レジストリにイメージやリポジトリを送信する）
+・docker push イメージ名:tag名
+
+◾️renameコマンド（Dockerコンテナ名を変更する）
+・docker rename コンテナ名 新しいコンテナ名
+
+◾️restartコマンド（Dockerコンテナを再起動する）
+・docker restart コンテナ名
+
+◾️rmコマンド（Dockerコンテナを削除する）
+ボリュームを残した状態でコンテナを削除する場合
+・docker rm コンテナ名
+
+匿名ボリュームも含めてコンテナを削除する場合
+※名前付きボリュームやバインドマウント先は削除されない
+・docker rm -v コンテナ名
+
+◾️rmiコマンド（Dockerイメージを削除する）
+・docker rmi イメージ名
+
+◾️searchコマンド（Docker Hubのイメージを検索する）
+・docker search 名前
+
+◾️startコマンド（停止しているDockerコンテナを起動する）
+・docker start コンテナ名
+
+◾️stopコマンド（実行中のDockerコンテナを停止する）
+・docker stop コンテナ名
+
+◾️unpauseコマンド（コンテナの一時停止を解除する）
+・docker unpause コンテナ名
+
+◾️volumeコマンド（ボリュームを管理する）
+▼volume createコマンド（ボリュームを作成する）
+・docker volume create ボリューム名
+
+▼volume inspectコマンド（ボリュームの詳細情報を表示する）
+・docker volume inspect ボリューム名
+
+▼volume lsコマンド（ボリュームの一覧を表示する）
+・docker volume ls
+
+▼volume pruneコマンド（使用していないボリュームを削除する）
+・docker volume prune
+
+▼volume rmコマンド（ボリュームを削除する）
+・docker volume rm ボリューム名
+
