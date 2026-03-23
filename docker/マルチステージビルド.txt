@@ -1,0 +1,28 @@
+◾️マルチステージビルドとは
+・Dockerコンテナで起動させるために必要な実行ファイルだけが含まれたDockerイメージを作成すること
+
+例）
+SpringのWebアプリを起動するコンテナを利用する場合
+
+FROM Javaのイメージ
+COPY ビルドコンテキスト内のパス コンテナ内パス
+RUN mavenインストール
+RUN maven実行
+CMD Spring起動
+
+上記の際、Springを起動するためのパッケージをインストールするためにmavenインストールは必要
+ただ、実際にWebアプリが起動する際にmavenはなくても良いため、無駄な容量を抱えていることになる。
+
+そのため以下のようにステージを分けることで必要なファイルのみを含んだイメージを作成できる
+
+FROM Javaのイメージ as builder
+COPY ビルドコンテキスト内のパス コンテナ内パス
+RUN mavenインストール
+RUN maven実行
+
+FROM Javaのイメージ
+COPY builderのmaven実行後のファイルをコピー
+CMD Spring起動
+
+上記のDockerfileで作成されたDockerイメージにはmavenがインストールされていないため、
+mavenの分の容量がない = 軽量なイメージになる
