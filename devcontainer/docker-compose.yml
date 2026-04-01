@@ -1,0 +1,33 @@
+services:
+  django-db_test:
+    image: postgres:17
+    container_name: django-db_test
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - 5432:5432
+    volumes:
+      - db-store:/var/lib/postgresql
+      - ./postgres_logs:/var/log/postgresql
+  django-web_test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: django-web_test
+    tty: true
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      FROM_EMAIL: ${FROM_EMAIL}
+    depends_on:
+      - django-db_test
+    volumes:
+      - ./django-web/:/usr/src/app/
+    ports:
+      - 8001:8000
+volumes:
+  db-store:

@@ -1,0 +1,70 @@
+{
+    "name": "django-web",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "django-web_test",
+    "workspaceFolder": "/usr/src/app/",
+    "shutdownAction": "stopCompose",
+    // 拡張機能
+    "extensions": [
+        // Python
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.vscode-pylance",
+        // Pythonコードチェック
+        "ms-python.flake8",
+        "ms-python.isort",
+        "ms-python.autopep8",
+        // Django
+        "batisteo.vscode-django",
+        "thebarkman.vscode-djaneiro",
+        "monosans.djlint",
+        // VSCode用
+        "esbenp.prettier-vscode",
+        "mosapride.zenkaku",
+        "shardulm94.trailing-spaces",
+        "oderwat.indent-rainbow",
+        "anteprimorac.html-end-tag-labels",
+        "vincaslt.highlight-matching-tag"
+    ],
+    // VSCode設定
+    "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        // Prettier設定
+        "prettier.singleQuote": true,
+        "prettier.jsxSingleQuote": true,
+        "prettier.printWidth": 120,
+        "prettier.tabWidth": 4,
+        // Js, Tsのシングルクォート設定
+        "javascript.preferences.quoteStyle": "single",
+        "typescript.preferences.quoteStyle": "single",
+        // Python設定
+        "[python]": {
+            "editor.defaultFormatter": "ms-python.autopep8"
+        },
+        // Django html設定
+        "[django-html]": {
+            "editor.defaultFormatter": "monosans.djlint"
+        },
+        // flake8設定
+        "flake8.enabled": true,
+        "flake8.args": [
+            "--max-line-length=120",
+            "--exclude=build,migrations",
+            "--max-complexity=10"
+        ],
+        // isort設定
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        // autopep8設定
+        "autopep8.args": [
+            "--max-line-length=120",
+            "--indent-size=4"
+        ],
+        // djlint設定
+        "djlint.ignore": [
+            "H031"
+        ]
+    }
+}
