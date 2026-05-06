@@ -1,0 +1,38 @@
+◾️JavaConfigファイルの読み込み方法
+★基本的にコンポーネントスキャンを利用する
+ 理由：他の方法では、JavaConfigを追加した際、実装ファイルの書き換えが必要になり、書き換えが漏れた場合にJavaConfigが読み込まれないため
+
+※JavaConfigファイルとは
+　@Configurationが付与されたJavaクラス（ファイル）のこと
+
+1. AnnotationConfigApplicationContextクラスのコンストラクタの引数に
+　　任意の数のJavaConfigクラスを指定する
+　　※AnnotationConfigApplicationContextとはDIコンテナを生成する手法の一つ
+
+　＜方法＞
+　2つのクラス（BarConfig, FooConfig）に@Configurationを付与する
+　AnnotationConfigApplicationContextのインスタンスを生成する際の引数にJavaConfigクラスを指定する
+　new AnnotationConfigApplicationContext(BarConfig.class, FooConfig.class)
+
+2. @Importで連鎖的にインポートする
+
+　＜方法＞
+　2つのクラス（BarConfig, FooConfig）に@Configurationを付与する
+　FooConfigに「@Import(BarConfig.class)」を付与する
+　AnnotationConfigApplicationContextのインスタンスを生成する際の引数にJavaConfigクラスを指定する
+　new AnnotationConfigApplicationContext(FooConfig.class)
+　→FooConfigクラスがDIコンテナに読み込まれた際に、@Importで定義されているBarConfigも読み込まれる
+
+3. コンポーネントスキャンする
+　　※@Configurationは、ステレオタイプアノテーションの一つである
+
+　＜方法＞
+　2つのクラス（BarConfig, FooConfig）に@Configurationを付与する
+　2つのクラスは同一パッケージ内に配置する
+　FooConfigに@ComponentScanを定義する
+　AnnotationConfigApplicationContextのインスタンスを生成する際の引数にJavaConfigクラスを指定する
+　new AnnotationConfigApplicationContext(FooConfig.class)
+　→FooConfigクラスがDIコンテナに読み込まれた際に@ComponentScanが定義されていることを検知し、
+　 FooConfigクラスが定義されているパッケージ（ベースパッケージ）を基準にComponentScanを実行する
+　 BarConfigはFooConfigと同一パッケージにいるためComponentScanの範囲内であり、@Configurationはステレオタイプアノテーションのため、
+　 BarConfigもDIコンテナに読み込まれる
